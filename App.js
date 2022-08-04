@@ -5,8 +5,10 @@ import {
   View,
   Button,
   TextInput,
-  ScrollView,
+  FlatList,
 } from "react-native";
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
   const [enteredGoalText, setEnteredGoalText] = useState("");
@@ -17,27 +19,41 @@ export default function App() {
   }
 
   function addGoalHandler() {
-    setMyGoals((currentGoals) => [...currentGoals, enteredGoalText]);
+    setMyGoals((currentGoals) => [
+      ...currentGoals,
+      { text: enteredGoalText, id: Math.random().toString() },
+    ]);
+  }
+
+  function deleteGoalHandler(id) {
+    setMyGoals((currentGoals) => {
+      return currentGoals.filter((goal) => goal.id !== id);
+    });
   }
 
   return (
     <View style={styles.appContainer}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Enter goals!"
-          onChangeText={goalInputHandler}
-        ></TextInput>
-        <Button onPress={addGoalHandler} title="+ Goal"></Button>
-      </View>
       <View>
-        <ScrollView>
-          {myGoals.map((goal) => (
-            <Text style={styles.goalItemStyle} key={goal}>
-              * {goal} *
-            </Text>
-          ))}
-        </ScrollView>
+        <GoalInput
+          inputHandler={goalInputHandler}
+          goalHandler={addGoalHandler}
+        ></GoalInput>
+        <FlatList
+          data={myGoals}
+          renderItem={(itemData) => {
+            return (
+              <GoalItem
+                deleteItem={deleteGoalHandler}
+                item={itemData.item.text}
+                id={itemData.item.id}
+              ></GoalItem>
+              // <Text style={styles.goalItemStyle}>* {itemData.item} *</Text>
+            );
+          }}
+          keyExtractor={(item, index) => {
+            return item.id;
+          }}
+        ></FlatList>
       </View>
     </View>
   );
@@ -51,25 +67,5 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "aqua",
-    width: "60%",
-    alignContent: "center",
-    paddingLeft: 20,
-  },
-  goalItemStyle: {
-    borderColor: "lightgreen",
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    justifyContent: "center",
-    marginTop: 5,
-    margin: 5,
-    padding: 5,
-    borderRadius: 6,
-    backgroundColor: "#5e0acc",
-    color: "white",
-    textAlign: "center",
   },
 });
